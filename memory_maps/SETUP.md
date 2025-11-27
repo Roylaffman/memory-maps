@@ -16,7 +16,7 @@ For initial development and testing without spatial features:
 
 **Note:** Spatial features will not work without PostGIS.
 
-### Option 2: With PostGIS (Full Functionality)
+### Option 2: With PostGIS (Full Functionality) For me Option 2 is the only option 
 
 #### Windows Setup
 
@@ -28,13 +28,41 @@ For initial development and testing without spatial features:
 2. **Install GDAL:**
    - Download OSGeo4W installer from https://trac.osgeo.org/osgeo4w/
    - Install GDAL and its dependencies
-   - Add GDAL to your system PATH: `C:\OSGeo4W64\bin`
+   - Verify installation: `gdalinfo --version`
+   
+   **Installing GDAL Python Bindings:**
+   
+   Since building GDAL from source requires Visual C++ build tools, use one of these approaches:
+   
+   **Option A: Use pre-built wheels (Recommended)**
+   ```bash
+   # For GDAL 3.12.x
+   pip install GDAL==3.12.0.post1 --find-links https://github.com/cgohlke/geospatial-wheels/releases
+   ```
+   
+   **Option B: Use OSGeo4W Python**
+   - Use the Python installation that comes with OSGeo4W
+   - Located at: `C:\OSGeo4W\bin\python3.exe`
+   
+   **Option C: Skip GDAL Python bindings for now, (no)**
+   - The app will work without GDAL Python bindings for basic functionality
+   - GIS file import features (Task 4) will require GDAL
 
 3. **Configure Environment Variables:**
+   
+   For OSGeo4W installation, set these in your system or add to `.env`:
    ```
-   GDAL_LIBRARY_PATH=C:\OSGeo4W64\bin\gdal310.dll
-   GEOS_LIBRARY_PATH=C:\OSGeo4W64\bin\geos_c.dll
+   GDAL_LIBRARY_PATH=C:\OSGeo4W\bin\gdal312.dll
+   GEOS_LIBRARY_PATH=C:\OSGeo4W\bin\geos_c.dll
+   OSGEO4W_ROOT=C:\OSGeo4W
    ```
+   
+   **Note:** The DLL version number (e.g., gdal312.dll) should match your installed GDAL version.
+   Check with: `gdalinfo --version`
+   
+   **Alternative:** Add OSGeo4W to your system PATH:
+   - Add `C:\OSGeo4W\bin` to your PATH environment variable
+   - This allows Django to find GDAL automatically
 
 4. **Create Database:**
    ```bash

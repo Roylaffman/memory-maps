@@ -18,14 +18,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django.contrib.gis',  # GeoDjango for spatial data - requires GDAL/PostGIS
+    'django.contrib.gis',  # GeoDjango for spatial data - requires GDAL/PostGIS
     
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    # 'rest_framework_gis',  # DRF GIS support - requires GDAL
+    'rest_framework_gis',  # DRF GIS support - requires GDAL
     
     # Local apps
     'memory_maps',
@@ -34,15 +34,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'collab.middleware.APIVersionMiddleware',
-    'collab.middleware.ImmutabilityEnforcementMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'collab.middleware.APIDocumentationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'collab.middleware.ErrorHandlingMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -112,7 +108,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.FormParser',
     ],
-    'EXCEPTION_HANDLER': 'collab.exceptions.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
@@ -211,3 +207,37 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@worldbuilding
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_PERMISSIONS = 0o644
+
+# GDAL Configuration
+import os
+import sys
+
+# Use GDAL from the Python wheel (osgeo package)
+# The wheel includes its own GDAL, GEOS, and PROJ libraries
+try:
+    import osgeo
+    osgeo_path = os.path.dirname(osgeo.__file__)
+    
+    # Set GDAL library path to the wheel's DLL
+    gdal_dll = os.path.join(osgeo_path, 'gdal.dll')
+    if os.path.exists(gdal_dll):
+        GDAL_LIBRARY_PATH = gdal_dll
+        os.environ['GDAL_LIBRARY_PATH'] = gdal_dll
+    
+    # Set GEOS library path to the wheel's DLL
+    geos_dll = os.path.join(osgeo_path, 'geos_c.dll')
+    if os.path.exists(geos_dll):
+        GEOS_LIBRARY_PATH = geos_dll
+        os.environ['GEOS_LIBRARY_PATH'] = geos_dll
+    
+    # Add osgeo directory to PATH so DLLs can find their dependencies
+    if sys.platform == 'win32':
+        os.environ['PATH'] = osgeo_path + ';' + os.environ.get('PATH', '')
+        
+except ImportError:
+    # GDAL Python bindings not installed
+    # Fall back to OSGeo4W if available
+    if sys.platform == 'win32':
+        osgeo4w_path = config('OSGEO4W_ROOT', default=r'C:\OSGeo4W')
+        if os.path.exists(osgeo4w_path):
+            os.environ['PATH'] = os.path.join(osgeo4w_path, 'bin') + ';' + os.environ.get('PATH', '')
