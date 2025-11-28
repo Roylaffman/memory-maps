@@ -15,6 +15,28 @@
   align-items: center;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.5rem;
@@ -33,6 +55,29 @@
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-left {
+    gap: 0.5rem;
+  }
+
+  .back-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .feature-count {
+    font-size: 0.8rem;
+  }
 }
 
 .map-container {
