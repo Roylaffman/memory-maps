@@ -154,11 +154,14 @@ l# Implementation Plan
 
 - [ ] 5.2 Implement interactive map features and drawing tools
   - Add Leaflet.draw for point and polygon creation
+
   - Create feature popup components for content display
   - Implement map navigation and zoom controls
   - _Requirements: 1.3, 2.2, 6.1, 6.2_
 
-- [ ] 5.3 Build feature content management interface
+- [x] 5.3 Build feature content management interface
+
+
   - Create forms for adding stories and photos to features
   - Implement photo upload with preview functionality
   - Add content editing and deletion capabilities

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MapView from './components/MapView'
 import DrawingControls from './components/DrawingControls'
 import MapFeatures from './components/MapFeatures'
+import FeatureEditor from './components/FeatureEditor'
 import './App.css'
 
 function App() {
@@ -9,6 +10,8 @@ function App() {
   const [mapCenter] = useState([37.7749, -122.4194]);
   const [mapZoom] = useState(10);
   const [features, setFeatures] = useState([]);
+  const [editingFeature, setEditingFeature] = useState(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   // Handle new feature creation
   const handleFeatureCreated = ({ layer, type, geometry }) => {
@@ -25,13 +28,33 @@ function App() {
     
     setFeatures(prev => [...prev, newFeature]);
     console.log('Feature created:', newFeature);
+    
+    // Automatically open editor for new features
+    setEditingFeature(newFeature);
+    setIsEditorOpen(true);
   };
 
   // Handle feature editing
   const handleFeatureEdit = (feature) => {
     console.log('Edit feature:', feature);
-    // TODO: Open edit modal/form in Task 5.3
-    alert(`Edit feature: ${feature.title}\n(Feature editing UI will be implemented in Task 5.3)`);
+    setEditingFeature(feature);
+    setIsEditorOpen(true);
+  };
+
+  // Handle feature save from editor
+  const handleFeatureSave = (updatedFeature) => {
+    setFeatures(prev => prev.map(f => 
+      f.id === updatedFeature.id ? updatedFeature : f
+    ));
+    setIsEditorOpen(false);
+    setEditingFeature(null);
+    console.log('Feature saved:', updatedFeature);
+  };
+
+  // Handle editor cancel
+  const handleEditorCancel = () => {
+    setIsEditorOpen(false);
+    setEditingFeature(null);
   };
 
   // Handle feature deletion
@@ -77,6 +100,13 @@ function App() {
           />
         </MapView>
       </main>
+      
+      <FeatureEditor
+        feature={editingFeature}
+        isOpen={isEditorOpen}
+        onSave={handleFeatureSave}
+        onCancel={handleEditorCancel}
+      />
     </div>
   )
 }

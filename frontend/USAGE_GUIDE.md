@@ -128,14 +128,38 @@ The header displays the current number of features on the map:
 - Try zooming in for better precision
 - Check browser console for errors
 
-## What's Next
+## Editing Feature Content (NEW!)
 
-Coming in Task 5.3:
-- ✨ Edit feature details (title, description, category)
-- 📸 Upload and attach photos
-- 📝 Create and attach stories
-- 💾 Save features to backend
-- 🔄 Load existing features from database
+### Opening the Editor
+- **Automatic**: Editor opens automatically when you create a new feature
+- **Manual**: Click any feature, then click the "Edit" button in the popup
+
+### Adding Details
+1. **Title**: Enter a descriptive name (required)
+2. **Description**: Add detailed information about the feature
+3. **Category**: Classify the feature (e.g., Garden, Building, Trail)
+
+### Uploading Photos
+1. Click the "📷 Add Photos" button
+2. Select one or more images from your device
+3. Photos appear instantly with preview thumbnails
+4. Add captions by typing in the field below each photo
+5. Remove photos by clicking the × button
+
+### Adding Stories
+1. Click the "+ Add Story" button
+2. Enter a story title
+3. Write your story content
+4. Click "Save Story" to add it
+5. Add multiple stories to tell the complete narrative
+6. Remove stories by clicking the × button on each card
+
+### Saving Changes
+- Click "Save Changes" to update the feature
+- Click "Cancel" or the × button to discard changes
+- Click outside the modal to close without saving
+
+## What's Next
 
 Coming in Task 5.4:
 - 🗺️ Map gallery and management
