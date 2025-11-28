@@ -2,15 +2,18 @@ import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 
-// Component to handle map initialization and updates
+// Component to handle map initialization (only on mount, not on prop changes)
 function MapController({ center, zoom }) {
   const map = useMap();
   
   useEffect(() => {
+    // Only set view on initial mount, not when props change
+    // This prevents the map from re-centering while user is interacting
     if (center && zoom) {
       map.setView(center, zoom);
     }
-  }, [center, zoom, map]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array = only run on mount
   
   return null;
 }
