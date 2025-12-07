@@ -1,4 +1,4 @@
-import { Marker, Polygon } from 'react-leaflet';
+import { Marker, Polygon, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import FeaturePopup from './FeaturePopup';
 
@@ -34,6 +34,28 @@ function MapFeatures({ features = [], onFeatureEdit, onFeatureDelete }) {
             onDelete={onFeatureDelete}
           />
         </Marker>
+      );
+    }
+
+    // Handle LineString features (polylines)
+    if (feature_type === 'line' && geometry?.type === 'LineString') {
+      const positions = geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      return (
+        <Polyline
+          key={id}
+          positions={positions}
+          pathOptions={{
+            color: '#3388ff',
+            weight: 3,
+            opacity: 0.8
+          }}
+        >
+          <FeaturePopup
+            feature={{ id, title, description, category, stories, photos }}
+            onEdit={onFeatureEdit}
+            onDelete={onFeatureDelete}
+          />
+        </Polyline>
       );
     }
 

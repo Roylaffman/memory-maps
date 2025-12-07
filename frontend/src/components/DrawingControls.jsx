@@ -12,14 +12,17 @@ import 'leaflet-draw/dist/leaflet.draw.css';
  * @param {Function} props.onFeatureCreated - Callback when a feature is drawn (receives layer and type)
  * @param {Function} props.onFeatureEdited - Callback when features are edited (receives layers)
  * @param {Function} props.onFeatureDeleted - Callback when features are deleted (receives layers)
+ * @param {L.FeatureGroup} props.editableLayer - Optional feature group containing editable features
  */
-function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted }) {
+function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted, editableLayer }) {
   const map = useMap();
 
   useEffect(() => {
-    // Create a feature group to store drawn items
-    const drawnItems = new L.FeatureGroup();
-    map.addLayer(drawnItems);
+    // Use provided editable layer or create a new one
+    const drawnItems = editableLayer || new L.FeatureGroup();
+    if (!editableLayer) {
+      map.addLayer(drawnItems);
+    }
 
     // Configure drawing controls
     const drawControl = new L.Control.Draw({
@@ -39,7 +42,13 @@ function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted }
             fillOpacity: 0.3
           }
         },
-        polyline: false, // Disable polyline drawing
+        polyline: {
+          shapeOptions: {
+            color: '#3388ff',
+            weight: 3,
+            opacity: 0.8
+          }
+        },
         circle: false, // Disable circle drawing
         rectangle: {
           shapeOptions: {
@@ -84,6 +93,12 @@ function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted }
             type: 'Point',
             coordinates: [latlng.lng, latlng.lat]
           };
+        } else if (layerType === 'polyline') {
+          const latlngs = layer.getLatLngs();
+          geometry = {
+            type: 'LineString',
+            coordinates: latlngs.map(ll => [ll.lng, ll.lat])
+          };
         } else if (layerType === 'polygon' || layerType === 'rectangle') {
           const latlngs = layer.getLatLngs()[0];
           geometry = {
@@ -111,6 +126,12 @@ function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted }
             geometry = {
               type: 'Point',
               coordinates: [latlng.lng, latlng.lat]
+            };
+          } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+            const latlngs = layer.getLatLngs();
+            geometry = {
+              type: 'LineString',
+              coordinates: latlngs.map(ll => [ll.lng, ll.lat])
             };
           } else if (layer instanceof L.Polygon) {
             const latlngs = layer.getLatLngs()[0];
@@ -147,9 +168,11 @@ function DrawingControls({ onFeatureCreated, onFeatureEdited, onFeatureDeleted }
       map.off(L.Draw.Event.EDITED, handleEdited);
       map.off(L.Draw.Event.DELETED, handleDeleted);
       map.removeControl(drawControl);
-      map.removeLayer(drawnItems);
+      if (!editableLayer) {
+        map.removeLayer(drawnItems);
+      }
     };
-  }, [map, onFeatureCreated, onFeatureEdited, onFeatureDeleted]);
+  }, [map, onFeatureCreated, onFeatureEdited, onFeatureDeleted, editableLayer]);
 
   return null;
 }

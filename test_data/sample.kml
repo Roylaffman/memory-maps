@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Sample KML Data</name>
+    <description>Test data for KML import</description>
+    
+    <Placemark>
+      <name>Golden Gate Bridge</name>
+      <description>Iconic suspension bridge in San Francisco</description>
+      <Point>
+        <coordinates>-122.4783,37.8199,0</coordinates>
+      </Point>
+    </Placemark>
+    
+    <Placemark>
+      <name>Fisherman's Wharf</name>
+      <description>Popular tourist destination</description>
+      <Point>
+        <coordinates>-122.4177,37.8080,0</coordinates>
+      </Point>
+    </Placemark>
+    
+    <Placemark>
+      <name>Bay Trail</name>
+      <description>Waterfront walking path</description>
+      <LineString>
+        <coordinates>
+          -122.4783,37.8199,0
+          -122.4177,37.8080,0
+          -122.3964,37.7946,0
+        </coordinates>
+      </LineString>
+    </Placemark>
+    
+    <Placemark>
+      <name>Marina District</name>
+      <description>Residential neighborhood by the bay</description>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -122.4400,37.8050,0
+              -122.4300,37.8050,0
+              -122.4300,37.8100,0
+              -122.4400,37.8100,0
+              -122.4400,37.8050,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>

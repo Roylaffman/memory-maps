@@ -129,6 +129,7 @@ class MapFeature(models.Model):
     
     FEATURE_TYPES = [
         ('point', 'Point'),
+        ('line', 'Line'),
         ('polygon', 'Polygon'),
     ]
     

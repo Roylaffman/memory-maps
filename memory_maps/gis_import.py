@@ -109,6 +109,8 @@ class GeoJSONImporter:
         # Map GeoJSON types to our feature types
         if geom_type == 'point':
             feature_type = 'point'
+        elif geom_type in ['linestring', 'multilinestring']:
+            feature_type = 'line'
         elif geom_type in ['polygon', 'multipolygon']:
             feature_type = 'polygon'
         else:
@@ -303,7 +305,7 @@ class KMLImporter:
     
     def _import_kml(self, kml_content: bytes) -> Tuple[int, List[str], List[str]]:
         """
-        Parse and import KML content.
+        Parse and import KML content using simple XML parsing.
         
         Args:
             kml_content: KML data as bytes
@@ -312,19 +314,27 @@ class KMLImporter:
             Tuple of (count_imported, errors, warnings)
         """
         try:
-            from fastkml import kml
+            from lxml import etree
         except ImportError:
-            self.errors.append("fastkml library not installed. Install with: pip install fastkml")
+            self.errors.append("lxml library not installed. Install with: pip install lxml")
             return 0, self.errors, self.warnings
         
         try:
-            # Parse KML
-            k = kml.KML()
-            k.from_string(kml_content)
+            # Parse KML XML
+            tree = etree.fromstring(kml_content)
             
-            # Extract features from all documents and folders
-            for document in k.features():
-                self._process_kml_container(document)
+            # Define KML namespace
+            ns = {'kml': 'http://www.opengis.net/kml/2.2'}
+            
+            # Find all Placemarks
+            placemarks = tree.findall('.//kml:Placemark', ns)
+            
+            for placemark in placemarks:
+                try:
+                    self._import_kml_placemark(placemark, ns)
+                except Exception as e:
+                    name = placemark.findtext('kml:name', 'unknown', ns)
+                    self.errors.append(f"Failed to import placemark '{name}': {str(e)}")
             
             return len(self.imported_features), self.errors, self.warnings
             
@@ -332,64 +342,87 @@ class KMLImporter:
             self.errors.append(f"Failed to parse KML: {str(e)}")
             return 0, self.errors, self.warnings
     
-    def _process_kml_container(self, container):
+    def _import_kml_placemark(self, placemark, ns):
         """
-        Recursively process KML containers (Documents, Folders).
+        Import a KML Placemark as a MapFeature using lxml.
         
         Args:
-            container: KML container object
+            placemark: lxml Element for Placemark
+            ns: Namespace dictionary
         """
-        for feature in container.features():
-            # Check if it's a container (Folder) or a Placemark
-            if hasattr(feature, 'features'):
-                # It's a container, recurse
-                self._process_kml_container(feature)
-            else:
-                # It's a Placemark
-                try:
-                    self._import_placemark(feature)
-                except Exception as e:
-                    self.errors.append(f"Failed to import placemark '{feature.name}': {str(e)}")
-    
-    def _import_placemark(self, placemark):
-        """
-        Import a KML Placemark as a MapFeature.
+        # Extract name and description
+        name = placemark.findtext('kml:name', 'Unnamed', ns)
+        description = placemark.findtext('kml:description', '', ns)
         
-        Args:
-            placemark: KML Placemark object
-        """
-        if not placemark.geometry:
-            self.warnings.append(f"Placemark '{placemark.name}' has no geometry")
+        # Find geometry
+        point = placemark.find('.//kml:Point', ns)
+        linestring = placemark.find('.//kml:LineString', ns)
+        polygon = placemark.find('.//kml:Polygon', ns)
+        
+        feature_type = None
+        geometry_json = None
+        
+        if point is not None:
+            # Parse Point
+            coords_text = point.findtext('.//kml:coordinates', '', ns).strip()
+            if coords_text:
+                coords = coords_text.split(',')
+                lng, lat = float(coords[0]), float(coords[1])
+                feature_type = 'point'
+                geometry_json = json.dumps({
+                    'type': 'Point',
+                    'coordinates': [lng, lat]
+                })
+        
+        elif linestring is not None:
+            # Parse LineString
+            coords_text = linestring.findtext('.//kml:coordinates', '', ns).strip()
+            if coords_text:
+                coords_list = []
+                for coord in coords_text.split():
+                    parts = coord.split(',')
+                    if len(parts) >= 2:
+                        coords_list.append([float(parts[0]), float(parts[1])])
+                feature_type = 'line'
+                geometry_json = json.dumps({
+                    'type': 'LineString',
+                    'coordinates': coords_list
+                })
+        
+        elif polygon is not None:
+            # Parse Polygon
+            coords_text = polygon.findtext('.//kml:outerBoundaryIs//kml:coordinates', '', ns).strip()
+            if coords_text:
+                coords_list = []
+                for coord in coords_text.split():
+                    parts = coord.split(',')
+                    if len(parts) >= 2:
+                        coords_list.append([float(parts[0]), float(parts[1])])
+                feature_type = 'polygon'
+                geometry_json = json.dumps({
+                    'type': 'Polygon',
+                    'coordinates': [coords_list]
+                })
+        
+        if not feature_type or not geometry_json:
+            self.warnings.append(f"Placemark '{name}' has no valid geometry")
             return
         
-        # Determine feature type
-        geom_type = placemark.geometry.geom_type.lower()
-        if geom_type == 'point':
-            feature_type = 'point'
-        elif geom_type in ['polygon', 'multipolygon']:
-            feature_type = 'polygon'
-        else:
-            self.warnings.append(f"Unsupported geometry type: {geom_type}")
-            return
-        
-        # Convert geometry
+        # Convert to appropriate format
         if POSTGIS_ENABLED:
-            geom_obj = placemark.geometry
+            from django.contrib.gis.geos import GEOSGeometry
+            geom_obj = GEOSGeometry(geometry_json)
         else:
-            # Convert to GeoJSON for non-PostGIS
-            geom_obj = json.dumps({
-                'type': placemark.geometry.geom_type,
-                'coordinates': list(placemark.geometry.coords)
-            })
+            geom_obj = geometry_json
         
         # Create MapFeature
         map_feature = MapFeature(
             map=self.map,
             feature_type=feature_type,
             geometry=geom_obj,
-            title=(placemark.name or "Unnamed")[:200],
-            description=(placemark.description or "")[:1000],
-            category=""
+            title=name[:200],
+            description=description[:1000],
+            category="imported"
         )
         
         map_feature.full_clean()

@@ -1,0 +1,63 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4194, 37.7749]
+      },
+      "properties": {
+        "name": "San Francisco City Hall",
+        "description": "Historic government building in San Francisco",
+        "category": "Landmark"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4183, 37.7793]
+      },
+      "properties": {
+        "name": "Alamo Square",
+        "description": "Famous park with Painted Ladies Victorian houses",
+        "category": "Park"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-122.4194, 37.7749],
+          [-122.4183, 37.7793],
+          [-122.4089, 37.7835]
+        ]
+      },
+      "properties": {
+        "name": "Walking Route",
+        "description": "Scenic walking path through the city",
+        "category": "Trail"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-122.4200, 37.7740],
+          [-122.4180, 37.7740],
+          [-122.4180, 37.7760],
+          [-122.4200, 37.7760],
+          [-122.4200, 37.7740]
+        ]]
+      },
+      "properties": {
+        "name": "Civic Center Plaza",
+        "description": "Public plaza in downtown San Francisco",
+        "category": "Plaza"
+      }
+    }
+  ]
+}
